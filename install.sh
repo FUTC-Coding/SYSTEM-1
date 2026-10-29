@@ -72,7 +72,9 @@ say "fonts"
 mkdir -p "$FONTS"
 fetch_font() {   # family, path under google/fonts/ofl
     local family="$1" path="$2"
-    if [ "$(fc-match -f '%{family[0]}' "$family")" != "$family" ]; then
+    local have; have="$(fc-match -f '%{family[0]}|%{file}' "$family")"
+    # web-font copies (.woff/.woff2) show up in fontconfig, but Noctalia can't render them
+    if [ "${have%%|*}" != "$family" ] || [[ "$have" == *.woff || "$have" == *.woff2 ]]; then
         echo "   downloading $family"
         curl -fsSL "$GF/$path" -o "$FONTS/$(basename "${path//%5B/[}" | sed 's/%5D/]/')"
         curl -fsSL "$GF/$(dirname "$path")/OFL.txt" -o "$FONTS/OFL-$(basename "$(dirname "$path")").txt"

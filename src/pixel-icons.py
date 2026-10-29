@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Pixelate Noctalia's Tabler icon font: every icon is resampled onto the
 16x16 grid (chunky but still legible at bar size) and rebuilt
-from square cells. Writes ../noctalia/assets/fonts/noctalia-tabler.ttf.
+from square cells. Writes ../noctalia/assets/fonts/noctalia-tabler.ttf and
+links everything else in ../noctalia/assets to Noctalia's own assets, so the
+folder can stand in for them via NOCTALIA_ASSETS_DIR. Re-run after a Noctalia
+update.
 
     python3 pixel-icons.py [grid] [threshold]
 """
