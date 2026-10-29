@@ -26,8 +26,6 @@ a little Japanese. Light by day, dark after sunset, built for OLED screens.
   ordered-dither dissolve between them.
 - **Screensaver**: after 3 minutes idle, near-total black with the red bird
   trailing white ghosts and a drifting VT323 clock. Screens turn off after 10.
-- **Full-screen dither**: one key turns the whole desktop into a 1-bit
-  display that keeps only the reds.
 - **Bar and shell**: Noctalia gets the palette, Pixelify Sans, square
   panels, pixelated icons and kanji workspace numbers (一 二 三 …). Through
   Noctalia's templates, kitty, Alacritty, GTK, Qt and btop follow along.
@@ -90,7 +88,6 @@ restores it.
 |-----------------|------------------------------------------------------------|
 | SUPER+CTRL+T    | switch System 1 on/off                                     |
 | SUPER+CTRL+S    | screensaver now (any input closes it)                      |
-| SUPER+CTRL+D    | 1-bit dither over the whole screen                         |
 | SUPER+CTRL+B    | pause/resume the animated background                       |
 | SUPER+CTRL+M    | flip light/dark by hand (`noctalia msg theme-mode-set auto` follows the sun again) |
 
@@ -118,7 +115,7 @@ startup) and reloads Hyprland.
 | Path                          | What                                                        |
 |-------------------------------|-------------------------------------------------------------|
 | `src/system1-bg.c`            | wlr-layer-shell + GLES2 renderer, one surface per output: the background, the screensaver (`--saver`) and still renders (`--snapshot W H dark\|light HOUR out.ppm`) |
-| `shaders/`                    | the background, the saver and the Hyprland screen dither    |
+| `shaders/`                    | the animated background and the screensaver                 |
 | `src/build-assets.sh`         | bird, captions and clock digits as PGM textures in `assets/` |
 | `src/pixel-icons.py`          | resamples Noctalia's Tabler icon font onto a 16×16 grid into `noctalia/assets/` (used through `NOCTALIA_ASSETS_DIR`) |
 | `hypr/loader.lua`             | picks the Hyprland theme, kanji workspace names, Noctalia assets dir |

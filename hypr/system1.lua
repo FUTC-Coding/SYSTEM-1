@@ -98,13 +98,6 @@ hl.on("window.urgent", function()
     hl.notification.create({ text = "注意 — a window wants attention", timeout = 2500, color = RED })
 end)
 
--- 1-bit everything: the whole screen through an ordered dither
-local dither = false
-function System1ToggleDither()
-    dither = not dither
-    hl.config({ decoration = { screen_shader = dither and (S1 .. "/shaders/screen-dither.frag") or "" } })
-end
-
 -- Pixelated icon font for Noctalia (built by src/pixel-icons.py)
 NOCTALIA_ASSETS = S1 .. "/noctalia/assets"
 
@@ -118,7 +111,6 @@ end)
 hl.layer_rule({ match = { namespace = "^system1-bg$" }, no_anim = true })
 hl.layer_rule({ match = { namespace = "^system1-saver$" }, animation = "fade" })
 
-hl.bind("SUPER + CONTROL + D", System1ToggleDither)
 hl.bind("SUPER + CONTROL + B", hl.dsp.exec_cmd("pkill -USR1 -fx ~/.config/system1/bin/system1-bg"))       -- pause/resume the background
 hl.bind("SUPER + CONTROL + M", hl.dsp.exec_cmd("noctalia msg theme-mode-toggle"))  -- light/dark by hand
 hl.bind("SUPER + CONTROL + S", hl.dsp.exec_cmd(S1 .. "/bin/system1-bg --saver"))   -- screensaver now
