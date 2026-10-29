@@ -31,11 +31,10 @@ vec2 path(float t) {
 float birdAt(vec2 q, float t) {
     vec2 c = path(t);
     float dir = cos(t * 0.071 + uSeed) >= 0.0 ? 1.0 : -1.0;   // face the way it flies
-    float flap = 0.8 + 0.2 * sin(t * 2.2);
     float bw = bh * uBirdAspect;
-    vec2 l = vec2(dir * (q.x - c.x) / bw + 0.5, 0.5 - (q.y - c.y) / (bh * flap));
+    vec2 l = vec2(dir * (q.x - c.x) / bw + 0.5, 0.5 - (q.y - c.y) / bh);
     if (l.x < 0.0 || l.x > 1.0 || l.y < 0.0 || l.y > 1.0) return 0.0;
-    return smoothstep(0.3, 0.7, texture2D(uBird, l).r);
+    return step(0.5, texture2D(uBird, l).r);
 }
 
 float digit(float d, vec2 l) {   // d: 0-9, 10 = colon; l in 0..1 within the cell
@@ -53,8 +52,8 @@ void main() {
 
     float ink = 0.0, red = 0.0;
 
-    // the bird in red, with a white dither trail that thins out behind it
-    red += birdAt(q, t) * (0.7 + 0.3 * sin(q.x * 9.0 - t * 1.5));
+    // the bird in solid red, with a white dither trail that thins out behind it
+    red += birdAt(q, t);
     for (int i = 1; i <= TRAIL; i++) {
         float k = float(i);
         float b = birdAt(q, t - k * 0.55);
@@ -64,10 +63,23 @@ void main() {
         }
     }
 
-    // stars drifting slowly sideways
-    vec2 sc = floor((q + vec2(t * 0.004, 0.0)) * uRes.y / (PX * 3.0));
-    float s = hash(sc + uSeed);
-    ink += step(0.998, s) * (0.4 + 0.4 * sin(t * (0.5 + s * 2.0) + s * 50.0));
+    // stars drifting slowly sideways. Each is one steady pixel that now and
+    // then, on its own slow clock, twinkles into a small cross and back
+    {
+        vec2 sp = q + vec2(t * 0.004, 0.0);
+        float cs = PX * 8.0 / uRes.y;
+        vec2 sc = floor(sp / cs);
+        float s = hash(sc + uSeed);
+        if (s > 0.993) {
+            vec2 off = vec2(hash(sc + 7.1), hash(sc + 3.3)) - 0.5;
+            vec2 d = abs(sp - (sc + 0.5 + off * 0.5) * cs) * uRes.y / PX;   // in 1-bit pixels
+            float rate = 0.06 + 0.1 * fract(s * 531.0);                   // 1-2 minutes per cycle
+            float tw = pow(0.5 + 0.5 * sin(t * rate + s * 977.0), 16.0);
+            float core = step(max(d.x, d.y), 0.5);
+            float arms = step(min(d.x, d.y), 0.5) * step(max(d.x, d.y), 0.5 + 2.0 * tw);
+            ink += max(core, arms);
+        }
+    }
 
     // HH:MM in VT323, bouncing very slowly around the screen
     {
