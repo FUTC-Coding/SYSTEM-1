@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Renders still System 1 wallpapers (one dark, one light per connected
+# monitor) from the same shader as the animated background. Noctalia
+# shows them on the lock screen and wherever the animation is off.
+set -euo pipefail
+
+bin="$HOME/.config/system1/bin"
+out="$HOME/.config/system1/wallpapers"
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+mkdir -p "$out"
+
+hyprctl monitors -j | python3 -I -c '
+import json, sys
+for m in json.load(sys.stdin):
+    w, h = m["width"], m["height"]
+    if m["transform"] % 2:          # rotated: the surface is portrait
+        w, h = h, w
+    print(m["name"], w, h)
+' | while read -r name w h; do
+    for spec in dark:23.2 light:13.0; do
+        mode="${spec%%:*}" hour="${spec#*:}"
+        "$bin/system1-bg" --snapshot "$w" "$h" "$mode" "$hour" "$tmp/s.ppm"
+        magick "$tmp/s.ppm" "$out/$mode-$name.png"
+        echo "$out/$mode-$name.png"
+    done
+done

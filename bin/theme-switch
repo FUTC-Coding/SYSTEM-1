@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+# theme-switch system1 | off | toggle | status
+#
+# Switches the whole desktop between the System 1 theme and whatever look
+# was active before: Hyprland, Noctalia's palette/style/wallpaper/idle, and
+# through Noctalia's templates kitty, Alacritty, GTK, Qt and btop.
+# The previous Hyprland theme name and Noctalia settings are saved on the
+# way in and put back on the way out.
+set -euo pipefail
+
+S1="$HOME/.config/system1"
+HYPR="$HOME/.config/hypr"
+NOCT="$HOME/.config/noctalia"
+SETTINGS="$HOME/.local/state/noctalia/settings.toml"
+SAVED="$S1/state/previous.json"
+SAVED_THEME="$S1/state/previous-theme"
+SAVER_SCREEN_OFF=600
+
+current() { cat "$HYPR/theme-name" 2>/dev/null || echo default; }
+notify() { hyprctl notify -1 2500 "rgb(ffffff)" "$1" >/dev/null 2>&1 || true; }
+# a failed Noctalia call (e.g. a monitor that is not connected) must not stop a switch halfway
+nmsg() { noctalia msg "$@" >/dev/null 2>&1 || echo "theme-switch: noctalia msg $* failed" >&2; }
+
+# Read/patch Noctalia's settings.toml. Only touches the screen-off timeout
+# and wallpaper lines, so the rest stays as Noctalia wrote it. Patches must
+# happen while Noctalia is stopped (see restart_shell): it writes its whole
+# in-memory settings back whenever one of them changes.
+settings_py() {
+    python3 -I - "$SETTINGS" "$SAVED" "$@" <<'EOF'
+import json, re, sys, tomllib
+settings, saved, action = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(settings, "rb") as f:
+    cfg = tomllib.load(f)
+
+def set_screen_off(value):
+    text = open(settings).read()
+    pat = r'(\[idle\.behavior\.screen-off\][^\[]*?timeout = )[0-9.]+'
+    text, n = re.subn(pat, lambda m: m.group(1) + f"{float(value):.1f}", text, count=1, flags=re.S)
+    if n:
+        open(settings, "w").write(text)
+
+if action == "save":
+    theme = cfg.get("theme", {})
+    walls = cfg.get("wallpaper", {})
+    state = {
+        "source": theme.get("source", "builtin"),
+        "builtin": theme.get("builtin", "Noctalia"),
+        "community_palette": theme.get("community_palette", ""),
+        "custom_palette": theme.get("custom_palette", ""),
+        "wallpaper_scheme": theme.get("wallpaper_scheme", ""),
+        "mode": theme.get("mode", "dark"),
+        "wallpaper_default": walls.get("default", {}).get("path", ""),
+        "wallpapers": {k: v.get("path", "") for k, v in walls.get("monitors", {}).items()},
+        "screen_off": cfg.get("idle", {}).get("behavior", {}).get("screen-off", {}).get("timeout"),
+    }
+    json.dump(state, open(saved, "w"), indent=2)
+elif action == "screen-off":
+    set_screen_off(sys.argv[4])
+elif action == "restore-screen-off":
+    s = json.load(open(saved))
+    if s.get("screen_off") is not None:
+        set_screen_off(s["screen_off"])
+elif action == "scheme":
+    s = json.load(open(saved))
+    src = s["source"]
+    name = {"builtin": s["builtin"], "community": s["community_palette"],
+            "custom": s["custom_palette"], "wallpaper": s["wallpaper_scheme"]}.get(src, "")
+    print(src)
+    print(name)
+    print(s["mode"])
+elif action == "restore-wallpaper-paths":
+    # outputs that are not connected ignore wallpaper-set; put their saved paths back directly
+    s = json.load(open(saved))
+    text = open(settings).read()
+    for mon, path in s["wallpapers"].items():
+        pat = r'(\[wallpaper\.monitors\.' + re.escape(mon) + r'\]\s*path = )"[^"]*/system1/wallpapers/[^"]*"'
+        text = re.sub(pat, lambda m: m.group(1) + json.dumps(path), text)
+    open(settings, "w").write(text)
+elif action == "wallpapers":
+    s = json.load(open(saved))
+    for mon, path in s["wallpapers"].items():
+        if path:
+            print(f"{mon}\t{path}")
+    if s["wallpaper_default"]:
+        print(f"\t{s['wallpaper_default']}")
+EOF
+}
+
+start_bg() {
+    pgrep -fx "$S1/bin/system1-bg" >/dev/null || setsid -f "$S1/bin/system1-bg" >/dev/null 2>&1 </dev/null
+}
+
+# Noctalia loads its icon font once, from NOCTALIA_ASSETS_DIR (set per theme in
+# hypr/loader.lua), so a theme change restarts it through Hyprland. Each
+# argument is a settings_py action to apply while it is stopped.
+restart_shell() {
+    pkill -x noctalia 2>/dev/null || true
+    for _ in $(seq 50); do pgrep -x noctalia >/dev/null || break; sleep 0.1; done
+    local action
+    for action in "$@"; do
+        # shellcheck disable=SC2086
+        settings_py $action
+    done
+    hyprctl eval 'hl.exec_cmd("noctalia")' >/dev/null
+}
+
+to_system1() {
+    mkdir -p "$S1/state" "$NOCT/palettes"
+    if [ "$(current)" != system1 ]; then
+        current > "$SAVED_THEME"
+        settings_py save
+    fi
+
+    [ -n "$(ls "$S1/wallpapers"/*.png 2>/dev/null)" ] || "$S1/bin/system1-wallpapers" >/dev/null
+
+    ln -sfn "$S1/noctalia/System1.json" "$NOCT/palettes/System1.json"
+    ln -sfn "$S1/noctalia/system1.toml" "$NOCT/system1.toml"
+    nmsg config-reload
+    nmsg color-scheme-set custom System1
+    nmsg theme-mode-set auto
+
+    echo system1 > "$HYPR/theme-name"
+    hyprctl reload >/dev/null
+    "$S1/bin/system1-mode"
+    start_bg
+    restart_shell "screen-off $SAVER_SCREEN_OFF"
+    notify "System 1 — ようこそ"
+}
+
+to_off() {
+    pkill -fx "$S1/bin/system1-bg" 2>/dev/null || true
+    rm -f "$NOCT/system1.toml"
+    cat "$SAVED_THEME" 2>/dev/null > "$HYPR/theme-name" || echo default > "$HYPR/theme-name"
+    hyprctl reload >/dev/null
+
+    if [ -f "$SAVED" ]; then
+        nmsg config-reload
+        { read -r src; read -r name; read -r mode; } < <(settings_py scheme)
+        nmsg color-scheme-set "$src" "$name"
+        nmsg theme-mode-set "$mode"
+        while IFS=$'\t' read -r mon path; do
+            if [ -n "$mon" ]; then
+                nmsg wallpaper-set "$mon" "$path"
+            else
+                nmsg wallpaper-set "$path"
+            fi
+        done < <(settings_py wallpapers | sort)   # the all-outputs default first, per-monitor after
+        restart_shell restore-screen-off restore-wallpaper-paths
+    else
+        nmsg config-reload
+        restart_shell
+    fi
+    notify "Previous theme restored"
+}
+
+case "${1:-status}" in
+    system1) to_system1 ;;
+    off) to_off ;;
+    toggle) if [ "$(current)" = system1 ]; then to_off; else to_system1; fi ;;
+    status) current ;;
+    *) echo "usage: theme-switch system1|off|toggle|status" >&2; exit 2 ;;
+esac

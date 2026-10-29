@@ -1,0 +1,79 @@
+# System 1 overlay for Noctalia. theme-switch links this file into
+# ~/.config/noctalia/ while the theme is active and removes it afterwards;
+# it is read after config.toml, so these keys win.
+
+[shell]
+font_family = "Pixelify Sans"
+corner_radius_scale = 0.0
+popup_shadows = false
+button_borders = true
+input_borders = true
+popup_borders = true
+card_borders = true
+
+    [shell.panel]
+    transparency_mode = "soft"
+    borders = true
+    border_color = "on_surface"
+    border_width = 2.0
+    shadow = false
+    list_item_background = true
+
+    [shell.window_switcher]
+    style = "compact"
+
+[bar.default]
+concave_edge_corners = false
+radius_bottom_left = 0
+radius_bottom_right = 0
+
+# kanji workspace numbers (Hyprland names them, see themes/system1/init.lua);
+# DotGothic16 draws them through the fontconfig fallback in ../fontconfig
+[widget.workspaces]
+# the active one is an inverted box, like a selected Mac menu item
+style = "regular"
+show_labels = true
+label_source = "name"
+max_label_chars = 1
+capsule = false
+pill_scale = 1.0
+capsule_radius = 0
+active_pill_size = 1.6
+inactive_pill_size = 1.0
+focused_color = "primary"
+occupied_color = "surface_variant"
+empty_color = "surface"
+
+# nothing in the bar stays red; red only shows on hover and for errors
+[widget.session]
+color = "on_surface"
+
+[osd]
+border = true
+border_color = "on_surface"
+border_width = 2
+
+[lockscreen]
+transition = [ "pixel", "stripes" ]
+blur_intensity = 0.0
+tint_intensity = 0.15
+
+[wallpaper]
+fill_mode = "crop"
+transition = [ "pixel" ]
+
+[hooks]
+started = "~/.config/system1/bin/system1-mode"
+theme_mode_changed = "~/.config/system1/bin/system1-mode"
+
+# screensaver after 3 minutes idle; theme-switch moves screen-off to 10 minutes
+[idle.behavior.system1-saver]
+action = "command"
+enabled = true
+timeout = 180.0
+command = "~/.config/system1/bin/system1-bg --saver"
+resume_command = "pkill -f 'system1-bg --saver'"
+
+[shell.greeter_sync]
+# a palette/wallpaper change would otherwise ask for a password each time
+auto_sync = false

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Spreads Noctalia's resolved light/dark mode to the rest of System 1:
+# the animated background (via the mode file), Hyprland's borders and the
+# still wallpapers. Runs as Noctalia's started / theme_mode_changed hook,
+# or by hand with an explicit "dark" or "light".
+set -u
+
+mode="${1:-${NOCTALIA_THEME_MODE:-$(noctalia msg theme-mode-get 2>/dev/null)}}"
+case "$mode" in light|dark) ;; *) mode=dark ;; esac
+
+dir="${XDG_CACHE_HOME:-$HOME/.cache}/system1"
+mkdir -p "$dir"
+[ "$(cat "$dir/mode" 2>/dev/null)" = "$mode" ] || printf '%s\n' "$mode" > "$dir/mode"
+
+# only touch Hyprland while it is running the System 1 theme
+if [ "$(cat "$HOME/.config/hypr/theme-name" 2>/dev/null)" = system1 ]; then
+    hyprctl dispatch System1ApplyMode >/dev/null 2>&1
+fi
+
+walls="$HOME/.config/system1/wallpapers"
+for f in "$walls/$mode"-*.png; do
+    [ -e "$f" ] || continue
+    out="${f##*/$mode-}"
+    noctalia msg wallpaper-set "${out%.png}" "$f" >/dev/null 2>&1
+done
