@@ -17,9 +17,9 @@ a little Japanese. Light by day, dark after sunset, built for OLED screens.
 - **Red only flashes**: the border flashes red for 0.2 s when focus changes;
   hover, selection and errors are red; nothing stays red on screen.
 - **Animated background**: a slow, dithered sky with banded clouds, a
-  striped retro sun, then a moon and wheeling stars at night. The bird glides
-  past every few minutes and vertical Japanese captions with a red 鳥 seal
-  fade in and out (おはよう, こんにちは, 夕焼け, おやすみ by time of day). Sun
+  striped retro sun, then a moon and wheeling stars at night. Every two minutes a
+  vertical Japanese caption fades in and out, with the small red bird above
+  it and a red 鳥 seal below (おはよう, こんにちは, 夕焼け, おやすみ by time of day). Sun
   and moon follow your real sunrise and sunset. The whole frame orbits a few
   pixels so nothing sits still on an OLED.
 - **Light and dark**: follow the sun (Noctalia `mode = "auto"`), with an

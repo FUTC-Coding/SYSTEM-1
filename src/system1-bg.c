@@ -5,7 +5,8 @@
  *
  *   system1-bg                 animated background (bottom layer, no input)
  *   system1-bg --saver         screensaver (overlay layer, exits on input)
- *   system1-bg --snapshot W H dark|light HOUR out.ppm   (SYSTEM1_SCENE=saver for the saver)
+ *   system1-bg --snapshot W H dark|light HOUR out.ppm
+ *       SYSTEM1_SCENE=saver draws the saver, SYSTEM1_TIME=SECONDS another moment
  *                              render one background frame to a file
  *
  * The background follows ~/.cache/system1/mode ("dark" or "light"),
@@ -566,8 +567,9 @@ static int snapshot(int w, int h, bool dark, float hour, const char *out)
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         die("incomplete framebuffer");
     app.dark = dark ? 1.0f : 0.0f;
-    // a moment where the bird is on screen and a caption is showing
-    draw_quad(w, h, 3.0f, 95.0f, hour);
+    // scene time in seconds; SYSTEM1_TIME picks another moment
+    const char *st = getenv("SYSTEM1_TIME");
+    draw_quad(w, h, 3.0f, st ? (float)atof(st) : 95.0f, hour);
     unsigned char *px = malloc((size_t)w * h * 4);
     glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, px);
     FILE *f = fopen(out, "wb");

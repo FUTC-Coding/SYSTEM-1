@@ -67,7 +67,7 @@ void main() {
     // dark mode spends far less light on the same scene
     float budget = mix(1.0, 0.42, uDark);
 
-    float ink = 0.0, red = 0.0, birdHere = 0.0;
+    float ink = 0.0, red = 0.0;
 
     // ── Sky: slow banded clouds, thinner at night ──
     if (uv.y > HORIZON) {
@@ -125,24 +125,7 @@ void main() {
         ink += step(0.993, s) * step(d, PX * mix(0.8, 1.6, fract(s * 977.0))) * twinkle * night * 2.4;
     }
 
-    // ── The bird: glides across every ~2.5 minutes, flapping slowly ──
-    {
-        float period = 420.0;
-        float k = floor(t / period);
-        float p = fract(t / period) * period / 240.0;    // crosses in 4 minutes, then gone
-        if (p < 1.0) {
-            float bh = 0.12 + 0.03 * hash(vec2(k, 1.0));              // height in screen heights
-            float bw = bh * uBirdAspect;
-            float span = aspect + bw * 2.0;
-            vec2 c = vec2(-aspect * 0.5 - bw + span * p,
-                          0.55 + 0.2 * hash(vec2(k, 2.0)) + 0.012 * sin(t * 0.15));
-            vec2 l = vec2((q.x - c.x) / bw + 0.5, 0.5 - (q.y - c.y) / bh);
-            // solid, undithered, so it doesn't shimmer as it moves
-            birdHere = step(0.5, birdAt(l));
-        }
-    }
-
-    // ── Vertical caption with a hanko seal, fading in and out ──
+    // ── Vertical caption with the bird and a hanko seal, fading in and out ──
     {
         float period = 120.0;
         float k = floor(t / period);
@@ -159,6 +142,10 @@ void main() {
         vec2 top = vec2(side * (aspect * 0.5 - 0.06 - 0.12 * hash(vec2(k, 4.0))), 0.9 - 0.15 * hash(vec2(k, 6.0)));
         vec2 l = vec2((q.x - top.x) / ch + 0.5, (top.y - q.y) / colH);
         ink += textAt(col, l) * life * mix(0.95, 0.75, uDark);
+        // the bird, small and red, perched above the caption
+        float bw = ch * 2.6, bh = bw / uBirdAspect;
+        vec2 bl = vec2((q.x - top.x) / bw + 0.5, (top.y + 0.015 + bh - q.y) / bh);
+        red += step(0.5, birdAt(bl)) * life;
         // seal: a red square with 鳥 knocked out, under the caption
         float sealS = ch * 1.15;
         vec2 sl = (vec2(q.x - top.x, top.y - textH - 0.012 - q.y)) / sealS;
@@ -180,6 +167,6 @@ void main() {
 
     vec3 col = paper;
     if (th < ink) col = inkc;
-    if (th < red || birdHere > 0.0) col = RED;
+    if (th < red) col = RED;
     gl_FragColor = vec4(col, 1.0);
 }
