@@ -168,9 +168,6 @@ void main() {
         }
     }
 
-    // ── A CRT refresh band rolling down now and then ──
-    float band = exp(-pow((fract(-uv.y + t / 90.0) - 0.5) * 40.0, 2.0));
-    ink += band * 0.02;
 
     ink = clamp(ink * budget, 0.0, 1.0);
     red = clamp(red * mix(1.0, 0.8, uDark), 0.0, 1.0);
