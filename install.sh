@@ -15,6 +15,7 @@ HYPR="$HOME/.config/hypr"
 FONTS="$HOME/.local/share/fonts/system1"
 FC="$HOME/.config/fontconfig/conf.d/50-system1.conf"
 GF="https://raw.githubusercontent.com/google/fonts/main/ofl"
+DM_VERSION=1.500
 
 say() { printf '\033[1m::\033[0m %s\n' "$*"; }
 die() { printf 'install.sh: %s\n' "$*" >&2; exit 1; }
@@ -70,19 +71,26 @@ say "linking $S1 -> $REPO"
 
 say "fonts"
 mkdir -p "$FONTS"
-fetch_font() {   # family, path under google/fonts/ofl
-    local family="$1" path="$2"
-    local have; have="$(fc-match -f '%{family[0]}|%{file}' "$family")"
-    # web-font copies (.woff/.woff2) show up in fontconfig, but Noctalia can't render them
-    if [ "${have%%|*}" != "$family" ] || [[ "$have" == *.woff || "$have" == *.woff2 ]]; then
-        echo "   downloading $family"
-        curl -fsSL "$GF/$path" -o "$FONTS/$(basename "${path//%5B/[}" | sed 's/%5D/]/')"
-        curl -fsSL "$GF/$(dirname "$path")/OFL.txt" -o "$FONTS/OFL-$(basename "$(dirname "$path")").txt"
-    fi
+# true if FAMILY is installed as a font Noctalia can render; web-font copies
+# (.woff/.woff2) show up in fontconfig, but Noctalia can't use them
+have_font() {
+    local have; have="$(fc-match -f '%{family[0]}|%{file}' "$1")"
+    [ "${have%%|*}" = "$1" ] && [[ "$have" != *.woff && "$have" != *.woff2 ]]
 }
-fetch_font "Pixelify Sans" "pixelifysans/PixelifySans%5Bwght%5D.ttf"
-fetch_font "VT323" "vt323/VT323-Regular.ttf"
-fetch_font "DotGothic16" "dotgothic16/DotGothic16-Regular.ttf"
+if ! have_font "Departure Mono"; then
+    echo "   downloading Departure Mono $DM_VERSION"
+    tmp="$(mktemp -d)"
+    curl -fsSL "https://github.com/rektdeckard/departure-mono/releases/download/v$DM_VERSION/DepartureMono-$DM_VERSION.zip" -o "$tmp/dm.zip"
+    python3 -I -c 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])' "$tmp/dm.zip" "$tmp"
+    cp "$tmp/DepartureMono-$DM_VERSION/DepartureMono-Regular.otf" "$FONTS/"
+    cp "$tmp/DepartureMono-$DM_VERSION/LICENSE" "$FONTS/OFL-departuremono.txt"
+    rm -rf "$tmp"
+fi
+if ! have_font "DotGothic16"; then
+    echo "   downloading DotGothic16"
+    curl -fsSL "$GF/dotgothic16/DotGothic16-Regular.ttf" -o "$FONTS/DotGothic16-Regular.ttf"
+    curl -fsSL "$GF/dotgothic16/OFL.txt" -o "$FONTS/OFL-dotgothic16.txt"
+fi
 link "$REPO/fontconfig/50-system1.conf" "$FC"
 fc-cache -f >/dev/null
 

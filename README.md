@@ -25,8 +25,8 @@ a little Japanese. Light by day, dark after sunset, built for OLED screens.
 - **Light and dark**: follow the sun (Noctalia `mode = "auto"`), with an
   ordered-dither dissolve between them.
 - **Screensaver**: after 3 minutes idle, near-total black with the red bird
-  trailing white ghosts and a drifting VT323 clock. Screens turn off after 10.
-- **Bar and shell**: Noctalia gets the palette, Pixelify Sans, square
+  trailing white ghosts and a drifting Departure Mono clock. Screens turn off after 10.
+- **Bar and shell**: Noctalia gets the palette, Departure Mono, square
   panels, pixelated icons and kanji workspace numbers (一 二 三 …). Through
   Noctalia's templates, kitty, Alacritty, GTK, Qt and btop follow along.
 - **Easy to leave**: `theme-switch off` puts back the Hyprland theme,
@@ -54,7 +54,7 @@ Developed on CachyOS with an NVIDIA GPU, a 3440×1440 OLED and a portrait
     cd ~/Projects/system1
     ./install.sh --location "50.78 6.08"      # your latitude and longitude
 
-The installer links the checkout to `~/.config/system1`, downloads the three
+The installer links the checkout to `~/.config/system1`, downloads the two
 fonts (OFL) if you don't have them, builds the renderer, renders the
 textures and pixel icons, and links the Hyprland files into
 `~/.config/hypr/themes/`. If your `hyprland.lua` doesn't load the theme
@@ -122,7 +122,7 @@ startup) and reloads Hyprland.
 | `hypr/system1.lua`            | the Hyprland side of the theme                              |
 | `noctalia/System1.json`       | palette, linked into `~/.config/noctalia/palettes/`         |
 | `noctalia/system1.toml`       | style overlay, linked into `~/.config/noctalia/` while active |
-| `fontconfig/50-system1.conf`  | lets Pixelify Sans fall back to DotGothic16 for kanji       |
+| `fontconfig/50-system1.conf`  | lets Departure Mono fall back to DotGothic16 for kanji      |
 | `bin/theme-switch`            | switches on and off, saving and restoring your settings     |
 | `bin/system1-mode`            | Noctalia hook: spreads light/dark to Hyprland, the background and the stills |
 | `bin/system1-wallpapers`      | renders the still wallpapers for the lock screen (re-run after changing monitors) |
@@ -138,9 +138,9 @@ Then remove `require("themes.loader")` from `hyprland.lua`.
 The code is MIT licensed (see `LICENSE`). `logo/bird.svg` is the futc.de
 logo and is **not** covered by that licence.
 
-- Fonts, downloaded at install: [Pixelify Sans](https://fonts.google.com/specimen/Pixelify+Sans),
-  [VT323](https://fonts.google.com/specimen/VT323) and
-  [DotGothic16](https://fonts.google.com/specimen/DotGothic16), all SIL Open Font License.
+- Fonts, downloaded at install: [Departure Mono](https://departuremono.com) by
+  Helena Zhang and [DotGothic16](https://fonts.google.com/specimen/DotGothic16),
+  both SIL Open Font License.
 - Icons: pixelated at install from [Tabler Icons](https://tabler.io/icons) (MIT) as shipped with Noctalia.
 - `src/wlr-layer-shell-unstable-v1.xml` and `src/xdg-shell.xml` are the
   Wayland protocol definitions, under the licences in their headers.

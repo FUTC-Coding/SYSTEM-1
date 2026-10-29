@@ -81,10 +81,10 @@ void main() {
         }
     }
 
-    // HH:MM in VT323, bouncing very slowly around the screen
+    // HH:MM in Departure Mono, bouncing very slowly around the screen
     {
         float dh = 0.07;                      // digit height
-        float dw = dh * 0.5;
+        float dw = dh * 0.8;                  // cells are 64x80
         float w = dw * 5.0;
         vec2 room = vec2(aspect - w, 1.0 - dh) * 0.5 - 0.04;
         vec2 tri = abs(fract(vec2(t * 0.0031, t * 0.0047) + uSeed * 0.1) * 2.0 - 1.0) * 2.0 - 1.0;

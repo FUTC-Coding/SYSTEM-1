@@ -50,7 +50,7 @@ hl.config({
     },
     group = {
         groupbar = {
-            font_family = "Pixelify Sans",
+            font_family = "Departure Mono",
             gradients = false,
         },
     },

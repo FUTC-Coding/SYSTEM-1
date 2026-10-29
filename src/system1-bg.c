@@ -5,7 +5,7 @@
  *
  *   system1-bg                 animated background (bottom layer, no input)
  *   system1-bg --saver         screensaver (overlay layer, exits on input)
- *   system1-bg --snapshot W H dark|light HOUR out.ppm
+ *   system1-bg --snapshot W H dark|light HOUR out.ppm   (SYSTEM1_SCENE=saver for the saver)
  *                              render one background frame to a file
  *
  * The background follows ~/.cache/system1/mode ("dark" or "light"),
@@ -67,6 +67,7 @@ static struct {
     GLuint program, quad, tex_bird, tex_text, tex_digits;
     float bird_aspect;
 
+    bool saver_scene;   // draw saver.frag (the saver, or a snapshot of it)
     double start, fps;
     float dark, dark_target;
     time_t mode_checked;
@@ -184,7 +185,7 @@ static const char *VS =
 static void load_program(void)
 {
     char path[600];
-    snprintf(path, sizeof path, "%s/%s", app.shader_dir, app.mode == MODE_SAVER ? "saver.frag" : "background.frag");
+    snprintf(path, sizeof path, "%s/%s", app.shader_dir, app.saver_scene ? "saver.frag" : "background.frag");
     char *fs_src = read_file(path);
     if (!fs_src) {
         fprintf(stderr, "system1-bg: cannot read %s\n", path);
@@ -622,6 +623,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "usage: %s [--saver | --snapshot W H dark|light HOUR out.ppm]\n", argv[0]);
         return 2;
     }
+    const char *scene = getenv("SYSTEM1_SCENE");
+    app.saver_scene = app.mode == MODE_SAVER || (scene && strcmp(scene, "saver") == 0);
     if (app.mode == MODE_SNAPSHOT && argc != 7) {
         fprintf(stderr, "usage: %s --snapshot W H dark|light HOUR out.ppm\n", argv[0]);
         return 2;

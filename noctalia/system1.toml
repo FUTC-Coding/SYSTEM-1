@@ -3,7 +3,7 @@
 # it is read after config.toml, so these keys win.
 
 [shell]
-font_family = "Pixelify Sans"
+font_family = "Departure Mono"
 corner_radius_scale = 0.0
 popup_shadows = false
 button_borders = true

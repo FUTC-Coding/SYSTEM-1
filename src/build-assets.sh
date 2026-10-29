@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Renders the textures system1-bg samples from: the bird logo, a strip of
-# vertical Japanese captions and the VT323 clock digits. All 8-bit PGM,
+# vertical Japanese captions and the Departure Mono clock digits. All 8-bit PGM,
 # white = ink. Re-run after changing a phrase or the logo.
 set -euo pipefail
 
@@ -37,12 +37,13 @@ for i in "${!PHRASES[@]}"; do
 done
 magick "${cols[@]}" +append -colorspace gray -depth 8 "$OUT/text.pgm"
 
-# Clock digits "0123456789:" in VT323, 11 cells of 64x128
-VT="$(font VT323)"
+# Clock digits "0123456789:" in Departure Mono, 11 cells of 64x80. The font
+# sits on an 11-unit grid; 88 pt makes each of its pixels exactly 8 px
+DM="$(font "Departure Mono")"
 cells=()
 for i in 0 1 2 3 4 5 6 7 8 9 :; do
     n="$TMP/d_${i/:/colon}.png"
-    magick -size 64x128 xc:black -font "$VT" -pointsize 150 -fill white \
+    magick -size 64x80 xc:black -font "$DM" -pointsize 88 -fill white \
         -gravity center -annotate +0+0 "$i" "$n"
     cells+=("$n")
 done
