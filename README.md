@@ -3,6 +3,8 @@
 A retro-futuristic dynamic Hyprland + Noctalia desktop theme after the 1984 Macintosh, 1-bit black and white, red accents, my logo (interchangeable) and
 a little Japanese. Adapts to the time of day: Light by day, dark after sunset, built for OLED screens (prevents burn-in).
 
+*The animated background, sped up about 20×*
+![Windows over the animated background](docs/windows.gif)
 ![Dark mode](docs/screenshots/dark-windows.png)
 ![Light mode](docs/screenshots/light-windows.png)
 
@@ -12,18 +14,11 @@ a little Japanese. Adapts to the time of day: Light by day, dark after sunset, b
 |-------|-----|
 | ![The animated background at night](docs/night.gif) | ![The animated background by day](docs/day.gif) |
 
-*The animated background, sped up about 20×: clouds drift, stars twinkle one
-at a time, and every two minutes a caption fades in with the bird and the seal.*
-
-![Windows over the animated background](docs/windows.gif)
-
-*At work, as a time-lapse (about 15×): behind the windows the sky drifts and
-captions come and go, showing through the inactive window.*
+*time-lapse (15× speed)*
 
 ![The screensaver](docs/saver.gif)
 
-*The screensaver (3× speed): pure black, the red bird and its trail, a
-drifting clock.*
+*The screensaver (3× speed)*
 
 More in [`docs/screenshots/`](docs/screenshots/).
 
