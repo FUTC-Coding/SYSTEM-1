@@ -14,6 +14,7 @@ S1="$HOME/.config/system1"
 HYPR="$HOME/.config/hypr"
 FONTS="$HOME/.local/share/fonts/system1"
 FC="$HOME/.config/fontconfig/conf.d/50-system1.conf"
+ICONS="$HOME/.local/share/icons"
 GF="https://raw.githubusercontent.com/google/fonts/main/ofl"
 DM_VERSION=1.500
 
@@ -37,7 +38,8 @@ uninstall() {
     fi
     say "removing links"
     for l in "$HYPR/themes/system1/init.lua" "$HYPR/themes/loader.lua" "$FC" \
-             "$HOME/.config/noctalia/palettes/System1.json" "$HOME/.config/noctalia/system1.toml"; do
+             "$HOME/.config/noctalia/palettes/System1.json" "$HOME/.config/noctalia/system1.toml" \
+             "$ICONS/System1-Light" "$ICONS/System1-Dark"; do
         [ -L "$l" ] && rm -f "$l"
     done
     rmdir "$HYPR/themes/system1" 2>/dev/null || true
@@ -102,6 +104,13 @@ say "rendering textures"
 
 say "pixelating Noctalia's icons"
 python3 "$REPO/src/pixel-icons.py"
+
+say "building the file icon themes"
+[ -d /usr/share/icons/breeze ] || echo "   breeze icons not found: only the icons System 1 draws itself will show"
+python3 "$REPO/src/build-icons.py"
+for t in System1-Light System1-Dark; do
+    link "$REPO/icons/$t" "$ICONS/$t"
+done
 
 if [ -n "$location" ]; then
     printf '%s\n' "$location" > "$REPO/location"

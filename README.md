@@ -41,8 +41,13 @@ More in [`docs/screenshots/`](docs/screenshots/).
 - **Bar and shell**: Noctalia gets the palette, Departure Mono, square
   panels, pixelated icons and kanji workspace numbers (一 二 三 …). Through
   Noctalia's templates, kitty, Alacritty, GTK, Qt and btop follow along.
+- **File icons**: two pixel icon themes for Dolphin and other Qt/KDE apps,
+  with outlined folders and documents after the 1984 Finder and a small
+  pixel glyph for the type (code, image, archive, home, downloads …). They
+  switch with light/dark; apps that are already open keep the old icons
+  until restarted.
 - **Easy to leave**: `theme-switch off` puts back the Hyprland theme,
-  palette, mode, wallpapers and idle timeout you had before.
+  palette, mode, wallpapers, icon theme and idle timeout you had before.
 
 ## Requirements
 
@@ -50,12 +55,14 @@ More in [`docs/screenshots/`](docs/screenshots/).
 - [Noctalia](https://noctalia.dev) 5.4 or newer as the shell
 - To build: a C compiler, `make`, `pkg-config`, `wayland-scanner`, and the
   wayland-client, wayland-egl, EGL and GLESv2 headers
+- For the file icons: breeze icons (the fallback for anything System 1 doesn't
+  draw) and `kwriteconfig6` (KConfig); qt6ct or qt5ct for non-KDE Qt apps
 - `rsvg-convert` (librsvg), ImageMagick 7 (`magick`), `curl`, and Python 3
   with Pillow and fontTools
 
 On Arch-based systems:
 
-    sudo pacman -S --needed base-devel wayland mesa librsvg imagemagick python-pillow python-fonttools curl
+    sudo pacman -S --needed base-devel wayland mesa librsvg imagemagick python-pillow python-fonttools curl breeze-icons kconfig
 
 Developed on CachyOS with an NVIDIA GPU, a 3440×1440 OLED and a portrait
 1440p monitor.
@@ -68,7 +75,7 @@ Developed on CachyOS with an NVIDIA GPU, a 3440×1440 OLED and a portrait
 
 The installer links the checkout to `~/.config/system1`, downloads the two
 fonts (OFL) if you don't have them, builds the renderer, renders the
-textures and pixel icons, and links the Hyprland files into
+textures, pixel icons and file icon themes, and links the Hyprland files into
 `~/.config/hypr/themes/`. If your `hyprland.lua` doesn't load the theme
 loader yet, it tells you to add this line **after** your own look settings:
 
@@ -130,6 +137,7 @@ startup) and reloads Hyprland.
 | `shaders/`                    | the animated background and the screensaver                 |
 | `src/build-assets.sh`         | bird, captions and clock digits as PGM textures in `assets/` |
 | `src/pixel-icons.py`          | resamples Noctalia's Tabler icon font onto a 16×16 grid into `noctalia/assets/` (used through `NOCTALIA_ASSETS_DIR`) |
+| `src/build-icons.py`          | draws the `System1-Light` / `System1-Dark` icon themes into `icons/`, linked into `~/.local/share/icons/` |
 | `hypr/loader.lua`             | picks the Hyprland theme, kanji workspace names, Noctalia assets dir |
 | `hypr/system1.lua`            | the Hyprland side of the theme                              |
 | `noctalia/System1.json`       | palette, linked into `~/.config/noctalia/palettes/`         |

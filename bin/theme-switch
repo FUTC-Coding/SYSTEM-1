@@ -14,6 +14,8 @@ NOCT="$HOME/.config/noctalia"
 SETTINGS="$HOME/.local/state/noctalia/settings.toml"
 SAVED="$S1/state/previous.json"
 SAVED_THEME="$S1/state/previous-theme"
+SAVED_ICONS="$S1/state/previous-qt-icons"
+QTCT=("${XDG_CONFIG_HOME:-$HOME/.config}"/qt[56]ct/qt[56]ct.conf)
 SAVER_SCREEN_OFF=600
 
 current() { cat "$HYPR/theme-name" 2>/dev/null || echo default; }
@@ -112,6 +114,13 @@ to_system1() {
     if [ "$(current)" != system1 ]; then
         current > "$SAVED_THEME"
         settings_py save
+        # the icon theme of each qt5ct/qt6ct config and of kdeglobals; system1-mode sets ours
+        {
+            for f in "${QTCT[@]}"; do
+                [ -f "$f" ] && printf '%s\t%s\n' "$f" "$(sed -n 's/^icon_theme=//p' "$f")"
+            done
+            command -v kreadconfig6 >/dev/null && printf 'kdeglobals\t%s\n' "$(kreadconfig6 --file kdeglobals --group Icons --key Theme)"
+        } > "$SAVED_ICONS"
     fi
 
     [ -n "$(ls "$S1/wallpapers"/*.png 2>/dev/null)" ] || "$S1/bin/system1-wallpapers" >/dev/null
@@ -135,6 +144,19 @@ to_off() {
     rm -f "$NOCT/system1.toml"
     cat "$SAVED_THEME" 2>/dev/null > "$HYPR/theme-name" || echo default > "$HYPR/theme-name"
     hyprctl reload >/dev/null
+    if [ -f "$SAVED_ICONS" ]; then
+        while IFS=$'\t' read -r f icons; do
+            if [ "$f" = kdeglobals ]; then
+                if [ -n "$icons" ]; then
+                    kwriteconfig6 --file kdeglobals --group Icons --key Theme "$icons"
+                else
+                    kwriteconfig6 --file kdeglobals --group Icons --key Theme --delete
+                fi
+            elif [ -f "$f" ] && [ -n "$icons" ]; then
+                sed -i "s/^icon_theme=.*/icon_theme=$icons/" "$f"
+            fi
+        done < "$SAVED_ICONS"
+    fi
 
     if [ -f "$SAVED" ]; then
         nmsg config-reload

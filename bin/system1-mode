@@ -12,9 +12,16 @@ dir="${XDG_CACHE_HOME:-$HOME/.cache}/system1"
 mkdir -p "$dir"
 [ "$(cat "$dir/mode" 2>/dev/null)" = "$mode" ] || printf '%s\n' "$mode" > "$dir/mode"
 
-# only touch Hyprland while it is running the System 1 theme
+# only touch Hyprland and the Qt/KDE icon theme while System 1 is active.
+# KDE apps take it from kdeglobals, other Qt apps from qt5ct/qt6ct; both
+# read it at start, so open windows keep the old one.
 if [ "$(cat "$HOME/.config/hypr/theme-name" 2>/dev/null)" = system1 ]; then
     hyprctl dispatch System1ApplyMode >/dev/null 2>&1
+    icons="System1-Light"; [ "$mode" = dark ] && icons="System1-Dark"
+    for f in "${XDG_CONFIG_HOME:-$HOME/.config}"/qt[56]ct/qt[56]ct.conf; do
+        [ -f "$f" ] && sed -i "s/^icon_theme=.*/icon_theme=$icons/" "$f"
+    done
+    command -v kwriteconfig6 >/dev/null && kwriteconfig6 --file kdeglobals --group Icons --key Theme "$icons"
 fi
 
 walls="$HOME/.config/system1/wallpapers"
