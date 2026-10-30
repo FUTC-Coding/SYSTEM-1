@@ -1,6 +1,6 @@
 PREFIX  ?= $(HOME)/.config/system1
 CFLAGS  ?= -O2 -Wall -Wno-unused-parameter
-PROTO    = wlr-layer-shell-unstable-v1 xdg-shell
+PROTO    = wlr-layer-shell-unstable-v1 xdg-shell viewporter fractional-scale-v1
 GEN      = $(PROTO:%=%-client-protocol.h) $(PROTO:%=%-protocol.c)
 LIBS     = $(shell pkg-config --libs wayland-client wayland-egl egl glesv2) -lm
 

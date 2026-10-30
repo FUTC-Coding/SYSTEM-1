@@ -33,6 +33,8 @@
 #include <wayland-client.h>
 #include <wayland-egl.h>
 
+#include "fractional-scale-v1-client-protocol.h"
+#include "viewporter-client-protocol.h"
 #include "wlr-layer-shell-unstable-v1-client-protocol.h"
 
 enum run_mode { MODE_BG, MODE_SAVER, MODE_SNAPSHOT };
@@ -45,7 +47,13 @@ struct output {
     struct zwlr_layer_surface_v1 *layer;
     struct wl_egl_window *egl_window;
     EGLSurface egl_surface;
-    int width, height;
+    // with fractional scaling the buffer is drawn at the output's real
+    // resolution and a viewport maps it back onto the logical surface
+    struct wp_viewport *viewport;
+    struct wp_fractional_scale_v1 *fractional;
+    uint32_t scale120;             // preferred scale x 120 (120 = 1.0)
+    int width, height;             // logical size
+    int buf_width, buf_height;     // buffer size in real pixels
     bool configured, frame_ready;
     double next_due;
     float seed;
@@ -56,6 +64,8 @@ static struct {
     struct wl_display *display;
     struct wl_compositor *compositor;
     struct zwlr_layer_shell_v1 *layer_shell;
+    struct wp_viewporter *viewporter;
+    struct wp_fractional_scale_manager_v1 *fractional_manager;
     struct wl_seat *seat;
     struct wl_keyboard *keyboard;
     struct wl_pointer *pointer;
@@ -384,29 +394,51 @@ static void draw_output(struct output *o, double t)
         return;
     gl_init();
     eglSwapInterval(app.egl_display, 0);
-    draw_quad(o->width, o->height, o->seed, (float)(t - app.start), local_hour());
+    draw_quad(o->buf_width, o->buf_height, o->seed, (float)(t - app.start), local_hour());
     struct wl_callback *cb = wl_surface_frame(o->surface);
     wl_callback_add_listener(cb, &frame_listener, o);
     o->frame_ready = false;
     eglSwapBuffers(app.egl_display, o->egl_surface);
 }
 
+// (Re)sizes the buffer for the current logical size and scale
+static void output_resize(struct output *o)
+{
+    int bw = (int)lround(o->width * o->scale120 / 120.0);
+    int bh = (int)lround(o->height * o->scale120 / 120.0);
+    if (o->egl_window && bw == o->buf_width && bh == o->buf_height)
+        return;
+    o->buf_width = bw;
+    o->buf_height = bh;
+    if (o->egl_window) {
+        wl_egl_window_resize(o->egl_window, bw, bh, 0, 0);
+    } else {
+        o->egl_window = wl_egl_window_create(o->surface, bw, bh);
+        o->egl_surface = eglCreateWindowSurface(app.egl_display, app.egl_config, (EGLNativeWindowType)o->egl_window, NULL);
+    }
+    if (o->viewport)
+        wp_viewport_set_destination(o->viewport, o->width, o->height);
+    o->frame_ready = true;
+}
+
+static void preferred_scale(void *data, struct wp_fractional_scale_v1 *f, uint32_t scale)
+{
+    struct output *o = data;
+    o->scale120 = scale;
+    if (o->configured)
+        output_resize(o);
+}
+
+static const struct wp_fractional_scale_v1_listener fractional_listener = { .preferred_scale = preferred_scale };
+
 static void layer_configure(void *data, struct zwlr_layer_surface_v1 *layer, uint32_t serial, uint32_t w, uint32_t h)
 {
     struct output *o = data;
     zwlr_layer_surface_v1_ack_configure(layer, serial);
-    if (o->configured && (int)w == o->width && (int)h == o->height)
-        return;
     o->width = w;
     o->height = h;
-    if (o->egl_window) {
-        wl_egl_window_resize(o->egl_window, w, h, 0, 0);
-    } else {
-        o->egl_window = wl_egl_window_create(o->surface, w, h);
-        o->egl_surface = eglCreateWindowSurface(app.egl_display, app.egl_config, (EGLNativeWindowType)o->egl_window, NULL);
-    }
     o->configured = true;
-    o->frame_ready = true;
+    output_resize(o);
 }
 
 static void output_destroy(struct output *o);
@@ -426,6 +458,12 @@ static void output_create_surface(struct output *o)
     if (!app.compositor || !app.layer_shell || o->surface)
         return;
     o->surface = wl_compositor_create_surface(app.compositor);
+    o->scale120 = 120;
+    if (app.viewporter && app.fractional_manager) {
+        o->viewport = wp_viewporter_get_viewport(app.viewporter, o->surface);
+        o->fractional = wp_fractional_scale_manager_v1_get_fractional_scale(app.fractional_manager, o->surface);
+        wp_fractional_scale_v1_add_listener(o->fractional, &fractional_listener, o);
+    }
     bool saver = app.mode == MODE_SAVER;
     o->layer = zwlr_layer_shell_v1_get_layer_surface(app.layer_shell, o->surface, o->wl_output,
         saver ? ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY : ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM,
@@ -452,6 +490,10 @@ static void output_destroy(struct output *o)
         eglDestroySurface(app.egl_display, o->egl_surface);
     if (o->egl_window)
         wl_egl_window_destroy(o->egl_window);
+    if (o->fractional)
+        wp_fractional_scale_v1_destroy(o->fractional);
+    if (o->viewport)
+        wp_viewport_destroy(o->viewport);
     if (o->layer)
         zwlr_layer_surface_v1_destroy(o->layer);
     if (o->surface)
@@ -526,6 +568,10 @@ static void registry_global(void *data, struct wl_registry *reg, uint32_t name, 
         app.compositor = wl_registry_bind(reg, name, &wl_compositor_interface, 4);
     } else if (strcmp(iface, zwlr_layer_shell_v1_interface.name) == 0) {
         app.layer_shell = wl_registry_bind(reg, name, &zwlr_layer_shell_v1_interface, version < 4 ? version : 4);
+    } else if (strcmp(iface, wp_viewporter_interface.name) == 0) {
+        app.viewporter = wl_registry_bind(reg, name, &wp_viewporter_interface, 1);
+    } else if (strcmp(iface, wp_fractional_scale_manager_v1_interface.name) == 0) {
+        app.fractional_manager = wl_registry_bind(reg, name, &wp_fractional_scale_manager_v1_interface, 1);
     } else if (strcmp(iface, wl_seat_interface.name) == 0 && app.mode == MODE_SAVER && !app.seat) {
         app.seat = wl_registry_bind(reg, name, &wl_seat_interface, 4); // v5+ adds pointer events these listeners lack
         wl_seat_add_listener(app.seat, &seat_listener, NULL);
