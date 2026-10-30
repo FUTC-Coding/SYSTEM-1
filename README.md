@@ -16,6 +16,11 @@ a little Japanese. Light by day, dark after sunset, built for OLED screens.
 *The animated background, sped up about 20×: clouds drift, stars twinkle one
 at a time, and every two minutes a caption fades in with the bird and the seal.*
 
+![Windows over the animated background](docs/windows.gif)
+
+*At work, as a time-lapse (about 15×): the sky keeps drifting behind the
+windows and shows through the inactive ones.*
+
 ![The screensaver](docs/saver.gif)
 
 *The screensaver (3× speed): pure black, the red bird and its trail, a
