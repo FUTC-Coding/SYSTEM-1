@@ -139,7 +139,9 @@ void main() {
         float colH = ch * 6.0;                             // one atlas column is 960/160 = 6 glyph widths tall
         float textH = colH * (8.0 + len * 150.0) / 960.0;
         float side = hash(vec2(k, 3.0)) < 0.5 ? -1.0 : 1.0;
-        vec2 top = vec2(side * (aspect * 0.5 - 0.06 - 0.12 * hash(vec2(k, 4.0))), 0.9 - 0.15 * hash(vec2(k, 6.0)));
+        // keep to the middle 16:9 on ultrawides, so a 16:9 recording crop shows it
+        float edge = min(aspect, 16.0 / 9.0) * 0.5;
+        vec2 top = vec2(side * (edge - 0.06 - 0.12 * hash(vec2(k, 4.0))), 0.9 - 0.15 * hash(vec2(k, 6.0)));
         vec2 l = vec2((q.x - top.x) / ch + 0.5, (top.y - q.y) / colH);
         ink += textAt(col, l) * life * mix(0.95, 0.75, uDark);
         // the bird, small and red, perched above the caption

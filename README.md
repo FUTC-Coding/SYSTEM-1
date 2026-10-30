@@ -18,8 +18,8 @@ at a time, and every two minutes a caption fades in with the bird and the seal.*
 
 ![Windows over the animated background](docs/windows.gif)
 
-*At work, as a time-lapse (about 15×): the sky keeps drifting behind the
-windows and shows through the inactive ones.*
+*At work, as a time-lapse (about 15×): behind the windows the sky drifts and
+captions come and go, showing through the inactive window.*
 
 ![The screensaver](docs/saver.gif)
 
