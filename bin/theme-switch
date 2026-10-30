@@ -69,12 +69,15 @@ elif action == "scheme":
     print(name)
     print(s["mode"])
 elif action == "restore-wallpaper-paths":
-    # outputs that are not connected ignore wallpaper-set; put their saved paths back directly
+    # outputs that are not connected ignore wallpaper-set; put their saved paths back
+    # directly. Monitors that weren't saved (new or renamed connectors) get the default.
     s = json.load(open(saved))
     text = open(settings).read()
-    for mon, path in s["wallpapers"].items():
-        pat = r'(\[wallpaper\.monitors\.' + re.escape(mon) + r'\]\s*path = )"[^"]*/system1/wallpapers/[^"]*"'
-        text = re.sub(pat, lambda m: m.group(1) + json.dumps(path), text)
+    def restore(m):
+        path = s["wallpapers"].get(m.group(2)) or s["wallpaper_default"]
+        return m.group(1) + json.dumps(path) if path else m.group(0)
+    pat = r'(\[wallpaper\.monitors\.([^\]]+)\]\s*path = )"[^"]*/system1/wallpapers/[^"]*"'
+    text = re.sub(pat, restore, text)
     open(settings, "w").write(text)
 elif action == "wallpapers":
     s = json.load(open(saved))
