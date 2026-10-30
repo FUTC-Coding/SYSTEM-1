@@ -1,8 +1,7 @@
 # System 1
 
-A Hyprland + Noctalia desktop theme after the 1984 Macintosh, by way of
-[futc.de](https://futc.de): 1-bit black and white, one red, a paper bird and
-a little Japanese. Light by day, dark after sunset, built for OLED screens.
+A retro-futuristic dynamic Hyprland + Noctalia desktop theme after the 1984 Macintosh, 1-bit black and white, red accents, my logo (interchangeable) and
+a little Japanese. Adapts to the time of day: Light by day, dark after sunset, built for OLED screens (prevents burn-in).
 
 ![Dark mode](docs/screenshots/dark-windows.png)
 ![Light mode](docs/screenshots/light-windows.png)
