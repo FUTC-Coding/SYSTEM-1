@@ -10,6 +10,12 @@ a little Japanese. Adapts to the time of day: Light by day, dark after sunset, b
 
 *Dark and light mode. Light/dark follows the sun on its own.*
 
+![Dolphin with the pixel file icons, nvim and Zen](docs/screenshots/light-apps.png)
+![FUTC-OS in Zen, dark mode](docs/screenshots/dark-desktop2.png)
+
+*Dolphin with the pixel file icons next to nvim and Zen, and FUTC-OS in Zen
+after dark.*
+
 | Night | Day |
 |-------|-----|
 | ![The animated background at night](docs/night.gif) | ![The animated background by day](docs/day.gif) |
