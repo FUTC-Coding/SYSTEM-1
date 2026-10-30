@@ -4,11 +4,24 @@ A Hyprland + Noctalia desktop theme after the 1984 Macintosh, by way of
 [futc.de](https://futc.de): 1-bit black and white, one red, a paper bird and
 a little Japanese. Light by day, dark after sunset, built for OLED screens.
 
-![Day](docs/day.png)
-![Dusk](docs/dusk.png)
-![Night](docs/night.png)
+![Dark mode](docs/screenshots/dark-windows.png)
+![Light mode](docs/screenshots/light-windows.png)
 
-*The animated background at midday, at sunset, and at night (dark mode).*
+*Dark and light mode. Light/dark follows the sun on its own.*
+
+| Night | Day |
+|-------|-----|
+| ![The animated background at night](docs/night.gif) | ![The animated background by day](docs/day.gif) |
+
+*The animated background, sped up about 20×: clouds drift, stars twinkle one
+at a time, and every two minutes a caption fades in with the bird and the seal.*
+
+![The screensaver](docs/saver.gif)
+
+*The screensaver (3× speed): pure black, the red bird and its trail, a
+drifting clock.*
+
+More in [`docs/screenshots/`](docs/screenshots/).
 
 ## What it does
 
