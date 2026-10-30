@@ -50,7 +50,7 @@ Developed on CachyOS with an NVIDIA GPU, a 3440×1440 OLED and a portrait
 
 ## Install
 
-    git clone https://github.com/FUTC-Coding/system1 ~/Projects/system1
+    git clone https://github.com/FUTC-Coding/SYSTEM-1 ~/Projects/system1
     cd ~/Projects/system1
     ./install.sh --location "50.78 6.08"      # your latitude and longitude
 
