@@ -152,7 +152,11 @@ end
 
 `SYSTEM1_FETCH_ANIMATE=0` skips the animation, `SYSTEM1_FETCH_DELAY` sets the
 seconds per frame (0.03) and `SYSTEM1_FETCH_WIDTH` the logo width in columns
-(48, then run `src/build-assets.sh`).
+(52) and `SYSTEM1_FETCH_SHIFT` nudges the bird on the half-block grid if
+stray blocks show up (1); run `src/build-assets.sh` after changing either.
+Those two only apply to a scaled-down logo: the futc bird is hand-drawn in
+`logo/bird-fetch.txt` (`#` = ink), so edit that, or delete it after
+replacing the logo.
 
 ## How it fits together
 
@@ -182,7 +186,8 @@ Then remove `require("themes.loader")` from `hyprland.lua`.
 
 ## Credits and licence
 
-The code is MIT licensed (see `LICENSE`). `logo/bird.svg` is the futc.de
+The code is MIT licensed (see `LICENSE`). `logo/bird.svg` (and its pixel
+version `logo/bird-fetch.txt`) is the futc.de
 logo and is **not** covered by that licence.
 
 - Fonts, downloaded at install: [Departure Mono](https://departuremono.com) by
