@@ -56,6 +56,14 @@ More in [`docs/screenshots/`](docs/screenshots/).
   the distro logo, drawn in with a red dither wipe that settles into the text
   colour. It lists only the hardware (CPU, GPU, memory, disks, displays …),
   no network. With System 1 off it is plain fastfetch.
+- **Claude Code**: two custom themes (`claude/themes/`, made by
+  `claude/make-themes.py` from the palette) with black/white text, readable
+  greys and red instead of orange. `system1-mode` switches Claude Code between
+  them with light/dark. `claude/statusline.py` is a status line with context use,
+  the 5-hour and 7-day limits and whether the prompt cache is warm or cold.
+  Enable it with `"statusLine": {"type": "command", "command":
+  "~/.claude/system1-statusline.py", "refreshInterval": 15}` in
+  `~/.claude/settings.json`.
 - **Easy to leave**: `theme-switch off` puts back the Hyprland theme,
   palette, mode, wallpapers, icon theme and idle timeout you had before.
 

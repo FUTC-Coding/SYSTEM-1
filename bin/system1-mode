@@ -22,6 +22,7 @@ if [ "$(cat "$HOME/.config/hypr/theme-name" 2>/dev/null)" = system1 ]; then
         [ -f "$f" ] && sed -i "s/^icon_theme=.*/icon_theme=$icons/" "$f"
     done
     command -v kwriteconfig6 >/dev/null && kwriteconfig6 --file kdeglobals --group Icons --key Theme "$icons"
+    "$HOME/.config/system1/bin/system1-claude" "$mode"
 fi
 
 walls="$HOME/.config/system1/wallpapers"

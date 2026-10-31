@@ -144,6 +144,7 @@ to_off() {
     rm -f "$NOCT/system1.toml"
     cat "$SAVED_THEME" 2>/dev/null > "$HYPR/theme-name" || echo default > "$HYPR/theme-name"
     hyprctl reload >/dev/null
+    "$S1/bin/system1-claude" off
     if [ -f "$SAVED_ICONS" ]; then
         while IFS=$'\t' read -r f icons; do
             if [ "$f" = kdeglobals ]; then

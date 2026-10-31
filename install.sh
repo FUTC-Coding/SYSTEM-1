@@ -39,7 +39,9 @@ uninstall() {
     say "removing links"
     for l in "$HYPR/themes/system1/init.lua" "$HYPR/themes/loader.lua" "$FC" \
              "$HOME/.config/noctalia/palettes/System1.json" "$HOME/.config/noctalia/system1.toml" \
-             "$ICONS/System1-Light" "$ICONS/System1-Dark"; do
+             "$ICONS/System1-Light" "$ICONS/System1-Dark" \
+             "$HOME/.claude/themes/system1-light.json" "$HOME/.claude/themes/system1-dark.json" \
+             "$HOME/.claude/system1-statusline.py"; do
         [ -L "$l" ] && rm -f "$l"
     done
     rmdir "$HYPR/themes/system1" 2>/dev/null || true
@@ -118,6 +120,13 @@ fi
 if [ ! -f "$REPO/location" ]; then
     echo "   no location set: sunrise/sunset default to Aachen, Germany."
     echo "   re-run with --location \"LAT LON\" (decimal degrees) to change it."
+fi
+
+if [ -d "$HOME/.claude" ]; then
+    say "Claude Code"
+    link "$REPO/claude/themes/system1-light.json" "$HOME/.claude/themes/system1-light.json"
+    link "$REPO/claude/themes/system1-dark.json" "$HOME/.claude/themes/system1-dark.json"
+    link "$REPO/claude/statusline.py" "$HOME/.claude/system1-statusline.py"
 fi
 
 say "Hyprland"

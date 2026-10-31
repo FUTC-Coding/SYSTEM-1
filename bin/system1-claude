@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Points Claude Code at the System 1 theme for the current mode.
+#   system1-claude light|dark   use custom:system1-<mode> (saves the old theme first)
+#   system1-claude off          put the saved theme back
+# Claude Code keeps the theme in ~/.claude/settings.json. Sessions that are
+# already open pick it up when they next read the settings (or via /theme).
+set -u
+SETTINGS="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json"
+SAVED="$HOME/.config/system1/state/previous-claude-theme"
+[ -d "$(dirname "$SETTINGS")" ] || exit 0   # no Claude Code here
+
+python3 - "$SETTINGS" "$SAVED" "${1:-}" <<'PY'
+import json, os, sys, tempfile
+path, saved, arg = sys.argv[1:4]
+try:
+    with open(path) as f: s = json.load(f)
+except FileNotFoundError: s = {}
+cur = s.get("theme")
+if arg in ("light", "dark"):
+    want = f"custom:system1-{arg}"
+    if not (cur or "").startswith("custom:system1-"):
+        os.makedirs(os.path.dirname(saved), exist_ok=True)
+        with open(saved, "w") as f: f.write((cur or "") + "\n")
+elif arg == "off":
+    if not (cur or "").startswith("custom:system1-"): sys.exit(0)
+    try: want = open(saved).read().strip() or None
+    except FileNotFoundError: want = "dark"
+else:
+    sys.exit("usage: system1-claude light|dark|off")
+if cur == want: sys.exit(0)
+if want is None: s.pop("theme", None)
+else: s["theme"] = want
+mode = os.stat(path).st_mode & 0o777 if os.path.exists(path) else 0o644
+fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path))
+os.fchmod(fd, mode)
+with os.fdopen(fd, "w") as f: json.dump(s, f, indent=2); f.write("\n")
+os.replace(tmp, path)
+PY
