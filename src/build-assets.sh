@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Renders the textures system1-bg samples from: the bird logo, a strip of
 # vertical Japanese captions and the Departure Mono clock digits. All 8-bit PGM,
-# white = ink. Re-run after changing a phrase or the logo.
+# white = ink. Also the half-block bird for the terminal (assets/fetch/). Re-run after changing a phrase or the logo.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -48,5 +48,8 @@ for i in 0 1 2 3 4 5 6 7 8 9 :; do
     cells+=("$n")
 done
 magick "${cells[@]}" +append -colorspace gray -depth 8 "$OUT/digits.pgm"
+
+# Terminal logo for bin/system1-fetch, from the bird above
+python3 "$HERE/build-fetch.py"
 
 ls -l "$OUT"

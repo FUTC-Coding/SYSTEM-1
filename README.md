@@ -52,6 +52,10 @@ More in [`docs/screenshots/`](docs/screenshots/).
   pixel glyph for the type (code, image, archive, home, downloads …). They
   switch with light/dark; apps that are already open keep the old icons
   until restarted.
+- **Terminal**: `bin/system1-fetch` runs fastfetch with the bird instead of
+  the distro logo, drawn in with a red dither wipe that settles into the text
+  colour. It lists only the hardware (CPU, GPU, memory, disks, displays …),
+  no network. With System 1 off it is plain fastfetch.
 - **Easy to leave**: `theme-switch off` puts back the Hyprland theme,
   palette, mode, wallpapers, icon theme and idle timeout you had before.
 
@@ -135,6 +139,21 @@ startup) and reloads Hyprland.
 - **Colours**: `noctalia/System1.json` (Noctalia palette, dark and light)
   and `PALETTE` in `hypr/system1.lua`.
 
+### Fetch in new terminals
+
+To get the bird when a terminal opens, call `system1-fetch` from your shell's
+greeting. In fish, after anything else that defines `fish_greeting`:
+
+```fish
+function fish_greeting
+    ~/.config/system1/bin/system1-fetch
+end
+```
+
+`SYSTEM1_FETCH_ANIMATE=0` skips the animation, `SYSTEM1_FETCH_DELAY` sets the
+seconds per frame (0.03) and `SYSTEM1_FETCH_WIDTH` the logo width in columns
+(48, then run `src/build-assets.sh`).
+
 ## How it fits together
 
 | Path                          | What                                                        |
@@ -151,6 +170,8 @@ startup) and reloads Hyprland.
 | `fontconfig/50-system1.conf`  | lets Departure Mono fall back to DotGothic16 for kanji      |
 | `bin/theme-switch`            | switches on and off, saving and restoring your settings     |
 | `bin/system1-mode`            | Noctalia hook: spreads light/dark to Hyprland, the background and the stills |
+| `bin/system1-fetch`           | fastfetch with the animated half-block bird                 |
+| `src/build-fetch.py`          | the bird and its wipe frames as text, into `assets/fetch/`  |
 | `bin/system1-wallpapers`      | renders the still wallpapers for the lock screen (re-run after changing monitors) |
 
 ## Uninstall

@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# fastfetch with the System 1 bird instead of the distro logo. In a terminal
+# the bird is drawn in with a red dither wipe and then settles into the
+# normal text colour (red only flashes). With System 1 switched off, or the
+# logo not built yet, this is plain fastfetch.
+#
+#   system1-fetch [fastfetch options]
+#   SYSTEM1_FETCH_ANIMATE=0   skip the animation
+#   SYSTEM1_FETCH_DELAY=0.03  seconds per frame
+#
+# Only the hardware is listed (no network, no software); pass -s/--structure
+# to choose other modules.
+set -uo pipefail
+
+S1="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+LOGO="$S1/assets/fetch/logo.txt"
+FRAMES="$S1/assets/fetch/frames.txt"
+
+if [ "$(cat "$HOME/.config/hypr/theme-name" 2>/dev/null)" != system1 ] || [ ! -f "$LOGO" ]; then
+    exec fastfetch "$@"
+fi
+
+HARDWARE="Title:Separator:Host:CPU:GPU:Memory:Swap:Disk:Display:Battery:PowerAdapter:Break:Colors"
+ff=(fastfetch --logo-color-1 default --color-keys default --color-title default --structure "$HARDWARE")
+
+if [ ! -t 1 ] || [ "${SYSTEM1_FETCH_ANIMATE:-1}" = 0 ] || [ ! -f "$FRAMES" ]; then
+    exec "${ff[@]}" --logo-type file --logo "$LOGO" "$@"
+fi
+
+mapfile -t frames < "$FRAMES"
+mapfile -t logo < "$LOGO"
+h=${#logo[@]}
+w=${#frames[0]}
+(( h > 0 && ${#frames[@]} % h == 0 )) || exec "${ff[@]}" --logo-type file --logo "$LOGO" "$@"
+
+# fastfetch next to an empty logo of the same size, then draw into the gap
+blank="$(for _ in $(seq "$h"); do printf '%*s\n' "$w" ''; done)"
+out="$("${ff[@]}" --pipe false --logo-type data --logo "$blank" "$@")"
+mapfile -t lines <<< "$out"
+n=${#lines[@]}
+
+# the animation moves the cursor back up; that only works if nothing scrolled
+# off the top
+if (( n < h || n >= $(tput lines 2>/dev/null || echo 0) )); then
+    exec "${ff[@]}" --logo-type file --logo "$LOGO" "$@"
+fi
+
+printf '%s\n' "$out"
+printf '\e[?25l'
+trap 'printf "\e[m\e[?25h"' EXIT
+trap 'exit 130' INT TERM
+
+draw() {   # draw COLOUR FIRST_LINE: h lines of the frames array
+    local i
+    printf '\e[%dA' "$n"
+    for (( i = 0; i < h; i++ )); do
+        printf '\r\e[%sm%s\e[m\n' "$1" "${frames[$2 + i]}"
+    done
+    (( n > h )) && printf '\e[%dB' $(( n - h ))
+}
+
+delay="${SYSTEM1_FETCH_DELAY:-0.03}"
+for (( f = 0; f < ${#frames[@]}; f += h )); do
+    draw '1;31' "$f"
+    sleep "$delay"
+done
+sleep 0.15
+draw '1;39' $(( ${#frames[@]} - h ))
